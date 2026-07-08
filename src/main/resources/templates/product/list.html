@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Quản lý sản phẩm')}"></head>
+<body>
+    <div th:replace="~{layout :: header}"></div>
+
+    <div class="container my-4">
+        <!-- Success/Error Messages -->
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            <span th:text="${successMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <span th:text="${errorMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <!-- Upper Control Header -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="mb-0 fw-bold text-secondary">
+                <i class="bi bi-list-task me-1"></i> Quản lý sản phẩm
+            </h4>
+            <a th:href="@{/product/create}" class="btn btn-dark shadow-sm">
+                <i class="bi bi-plus-circle me-1"></i> Thêm Sản Phẩm
+            </a>
+        </div>
+
+        <!-- Search Card -->
+        <div class="card card-custom">
+            <div class="card-body p-4">
+                <h5 class="card-title text-secondary mb-3 fw-semibold">
+                    <i class="bi bi-search me-1"></i> Tìm kiếm sản phẩm
+                </h5>
+                <form th:action="@{/product}" method="get" class="row g-3 align-items-end">
+                    <div class="col-md-3">
+                        <label class="form-label text-muted small fw-bold">Tên sản phẩm</label>
+                        <input type="text" name="name" th:value="${name}" class="form-control" placeholder="Nhập tên sản phẩm">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label text-muted small fw-bold">Giá bắt đầu (VND)</label>
+                        <input type="number" name="price" th:value="${price}" class="form-control" placeholder="Nhập giá bắt đầu">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label text-muted small fw-bold">Loại sản phẩm</label>
+                        <select name="categoryId" class="form-select">
+                            <option value="">--Chọn--</option>
+                            <option th:each="cat : ${categories}"
+                                    th:value="${cat.id}"
+                                    th:text="${cat.name}"
+                                    th:selected="${cat.id == categoryId}">
+                            </option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 d-flex gap-2">
+                        <a th:href="@{/product}" class="btn btn-outline-secondary w-50" title="Xóa tìm kiếm">
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                        </a>
+                        <button type="submit" class="btn btn-search w-50">
+                            <i class="bi bi-search me-1"></i> Tìm
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Table Form -->
+        <form th:action="@{/product/delete-multiple}" method="post" id="deleteForm">
+            <div class="card card-custom overflow-hidden">
+                <div class="table-responsive">
+                    <table class="table table-custom table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th class="text-center" style="width: 60px;">STT</th>
+                                <th class="text-center" style="width: 80px;">
+                                    <div class="form-check d-flex justify-content-center">
+                                        <input class="form-check-input" type="checkbox" id="selectAll">
+                                    </div>
+                                </th>
+                                <th>Tên Sản Phẩm</th>
+                                <th>Giá bắt đầu</th>
+                                <th>Loại sản phẩm</th>
+                                <th>Tình trạng</th>
+                                <th class="text-center" style="width: 120px;">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Empty State -->
+                            <tr th:if="${productPage.isEmpty()}">
+                                <td colspan="7" class="text-center py-5 text-muted">
+                                    <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                    Không tìm thấy sản phẩm nào phù hợp.
+                                </td>
+                            </tr>
+                            <!-- Data Rows -->
+                            <tr th:each="prod, state : ${productPage.content}">
+                                <td class="text-center fw-bold text-muted" th:text="${productPage.number * productPage.size + state.index + 1}">1</td>
+                                <td class="text-center">
+                                    <div class="form-check d-flex justify-content-center">
+                                        <input class="form-check-input select-item" type="checkbox" name="selectedIds"
+                                               th:value="${prod.id}" th:data-name="${prod.name}">
+                                    </div>
+                                </td>
+                                <td class="fw-semibold text-dark" th:text="${prod.name}">iPhone 11</td>
+                                <td class="fw-bold text-primary" th:text="${#numbers.formatDecimal(prod.price, 1, 'POINT', 0, 'COMMA') + ' VND'}">120.000 VND</td>
+                                <td th:text="${prod.category.name}">Điện thoại</td>
+                                <td>
+                                    <span class="badge rounded-pill px-3 py-2 badge-waiting" th:if="${prod.status == 'chờ duyệt'}" th:text="${prod.status}">chờ duyệt</span>
+                                    <span class="badge rounded-pill px-3 py-2 badge-active" th:if="${prod.status == 'đang đấu giá'}" th:text="${prod.status}">đang đấu giá</span>
+                                    <span class="badge rounded-pill px-3 py-2 badge-sold" th:if="${prod.status == 'đã bán'}" th:text="${prod.status}">đã bán</span>
+                                    <!-- Fallback for other status -->
+                                    <span class="badge rounded-pill px-3 py-2 bg-secondary" th:if="${prod.status != 'chờ duyệt' && prod.status != 'đang đấu giá' && prod.status != 'đã bán'}" th:text="${prod.status}">trạng thái khác</span>
+                                </td>
+                                <td class="text-center">
+                                    <a th:href="@{/product/edit/{id}(id=${prod.id})}" class="btn btn-sm btn-outline-primary py-1 px-2">
+                                        <i class="bi bi-pencil-square me-1"></i> Sửa
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Footer Actions & Pagination -->
+                <div class="card-footer bg-white border-top p-3 d-flex justify-content-between align-items-center">
+                    <div>
+                        <button type="submit" class="btn btn-outline-danger shadow-sm px-3" id="deleteBtn">
+                            <i class="bi bi-trash-fill me-1"></i> Xóa
+                        </button>
+                    </div>
+
+                    <!-- Pagination -->
+                    <nav th:if="${productPage.totalPages > 1}">
+                        <ul class="pagination pagination-sm mb-0">
+                            <!-- Previous Page -->
+                            <li class="page-item" th:classappend="${productPage.first} ? 'disabled'">
+                                <a class="page-link page-link-custom"
+                                   th:href="@{/product(name=${name}, price=${price}, categoryId=${categoryId}, page=${productPage.number - 1})}"
+                                   aria-label="Previous">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+
+                            <!-- Page Numbers -->
+                            <li class="page-item"
+                                th:each="i : ${#numbers.sequence(0, productPage.totalPages - 1)}"
+                                th:classappend="${productPage.number == i} ? 'active'">
+                                <a class="page-link page-link-custom"
+                                   th:href="@{/product(name=${name}, price=${price}, categoryId=${categoryId}, page=${i})}"
+                                   th:text="${i + 1}">1</a>
+                            </li>
+
+                            <!-- Next Page -->
+                            <li class="page-item" th:classappend="${productPage.last} ? 'disabled'">
+                                <a class="page-link page-link-custom"
+                                   th:href="@{/product(name=${name}, price=${price}, categoryId=${categoryId}, page=${productPage.number + 1})}"
+                                   aria-label="Next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div th:replace="~{layout :: footer}"></div>
+    <div th:replace="~{layout :: scripts}"></div>
+
+    <!-- JavaScript logic for select-all & delete validation -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const selectAllCheckbox = document.getElementById('selectAll');
+            const itemCheckboxes = document.querySelectorAll('.select-item');
+            const deleteForm = document.getElementById('deleteForm');
+
+            // Select all / Deselect all
+            if (selectAllCheckbox) {
+                selectAllCheckbox.addEventListener('change', function () {
+                    itemCheckboxes.forEach(cb => {
+                        cb.checked = this.checked;
+                    });
+                });
+            }
+
+            // Uncheck header checkbox if any individual checkbox is unchecked
+            itemCheckboxes.forEach(cb => {
+                cb.addEventListener('change', function () {
+                    if (!this.checked && selectAllCheckbox) {
+                        selectAllCheckbox.checked = false;
+                    }
+                });
+            });
+
+            // Form submit validation & confirmation displaying selected names
+            deleteForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                const checkedBoxes = document.querySelectorAll('.select-item:checked');
+
+                if (checkedBoxes.length === 0) {
+                    alert('Vui lòng chọn ít nhất một sản phẩm để xóa!');
+                    return;
+                }
+
+                let productNames = [];
+                checkedBoxes.forEach(cb => {
+                    productNames.push(cb.getAttribute('data-name'));
+                });
+
+                // Display exact confirmation message showing all selected names
+                const confirmMessage = "Bạn có muốn xóa tất cả sản phẩm đã chọn sau:\n" + productNames.join(', ') + "?";
+
+                if (confirm(confirmMessage)) {
+                    this.submit();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Thêm mới sản phẩm đấu giá')}"></head>
+<body>
+    <div th:replace="~{layout :: header}"></div>
+
+    <div class="container my-4" style="max-width: 800px;">
+        <!-- Card with header -->
+        <div class="card card-custom">
+            <div class="card-header bg-white border-bottom p-3 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold text-secondary">
+                    <i class="bi bi-plus-circle-fill text-primary me-1"></i> Thêm mới sản phẩm
+                </h5>
+                <a th:href="@{/product}" class="btn btn-sm btn-dark px-3">
+                    <i class="bi bi-house-door-fill me-1"></i> Quay về trang chủ
+                </a>
+            </div>
+            
+            <div class="card-body p-4">
+                <p class="text-danger small mb-4">* Các thuộc tính có dấu * là bắt buộc!</p>
+                
+                <form th:action="@{/product/create}" th:object="${product}" method="post">
+                    <!-- Name Input -->
+                    <div class="mb-3">
+                        <label for="name" class="form-label fw-semibold text-muted">Tên Sản Phẩm <span class="text-danger">*</span></label>
+                        <input type="text" id="name" th:field="*{name}" 
+                               class="form-control" th:classappend="${#fields.hasErrors('name')} ? 'is-invalid' : ''" 
+                               placeholder="Nhập tên sản phẩm">
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">
+                            Lỗi tên sản phẩm
+                        </div>
+                    </div>
+
+                    <!-- Price Input -->
+                    <div class="mb-3">
+                        <label for="price" class="form-label fw-semibold text-muted">Giá bắt đầu <span class="text-danger">*</span></label>
+                        <input type="number" id="price" th:field="*{price}" 
+                               class="form-control" th:classappend="${#fields.hasErrors('price')} ? 'is-invalid' : ''" 
+                               placeholder="Nhập giá bắt đầu">
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('price')}" th:errors="*{price}">
+                            Lỗi giá bắt đầu
+                        </div>
+                        <div class="form-text text-muted small">Mức giá tối thiểu từ 100.000 VND trở lên.</div>
+                    </div>
+
+                    <!-- Category Selector -->
+                    <div class="mb-4">
+                        <label for="category" class="form-label fw-semibold text-muted">Loại sản phẩm <span class="text-danger">*</span></label>
+                        <select id="category" th:field="*{category}" 
+                                class="form-select" th:classappend="${#fields.hasErrors('category')} ? 'is-invalid' : ''">
+                            <option value="">--Chọn loại sản phẩm--</option>
+                            <option th:each="cat : ${categories}" 
+                                    th:value="${cat.id}" 
+                                    th:text="${cat.name}">
+                            </option>
+                        </select>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('category')}" th:errors="*{category}">
+                            Vui lòng chọn loại sản phẩm
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                        <button type="submit" class="btn btn-primary px-4 py-2">
+                            <i class="bi bi-save me-1"></i> Thêm sản phẩm
+                        </button>
+                        <a th:href="@{/product}" class="btn btn-outline-secondary px-4 py-2">
+                            Hủy bỏ
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="~{layout :: footer}"></div>
+    <div th:replace="~{layout :: scripts}"></div>
+</body>
+</html>
